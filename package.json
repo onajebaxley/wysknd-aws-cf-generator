@@ -13,7 +13,12 @@
   "author": "Vamshi K Ponnapalli <vamshi.ponnapalli@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "winston": "^2.2.0"
+    "bluebird": "^3.4.6",
+    "camelcase": "^3.0.0",
+    "clone": "^1.0.2",
+    "interpolate": "^0.1.0",
+    "shortid": "^2.2.6",
+    "wysknd-log": "0.0.4"
   },
   "devDependencies": {
     "chai": "^3.5.0",
