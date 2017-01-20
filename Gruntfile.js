@@ -1,7 +1,5 @@
-/* jshint node:true */
 'use strict';
 
-var _fs = require('fs');
 var _folder = require('wysknd-lib').folder;
 var _utils = require('wysknd-lib').utils;
 
@@ -14,8 +12,8 @@ var HELP_TEXT =
 ' includes tasks for linting, building and testing.                              \n' +
 '                                                                                \n' +
 ' Supported Tasks:                                                               \n' +
-'   [default]         : Performs standard pre-checkin activities. Runs           \n' +
-'                       jsbeautifier on all source files, validates the files    \n' +
+'   [default]         : Performs standard pre-checkin activities. Runs a         \n' +
+'                       formatter on all source files, validates the files       \n' +
 '                       (linting), and then executes tests against the files.    \n' +
 '                                                                                \n' +
 '   env               : Provides information regarding the current environment.  \n' +
@@ -29,8 +27,8 @@ var HELP_TEXT =
 '                                                                                \n' +
 '   monitor:[opt1]:   : Monitors files for changes, and triggers actions based   \n' +
 '           [opt2]:     on specified options. Supported options are as follows:  \n' +
-'                         [lint]   : Executes jshint with default options against\n' +
-'                                    all source files.                           \n' +
+'                         [lint]   : Executes linting with default options       \n' +
+'                                    against all source files.                   \n' +
 '                         [unit]   : Executes unit tests against all source      \n' +
 '                                    files.                                      \n' +
 '                                                                                \n' +
@@ -39,7 +37,7 @@ var HELP_TEXT =
 '                       requires a web server to be launched, this will be done  \n' +
 '                       automatically.                                           \n' +
 '                                                                                \n' +
-'   jshint:dev        : Executes jshint against all source files.                \n' +
+'   lint              : Executes linting against all source files.               \n' +
 '                                                                                \n' +
 '   test:unit         : Executes unit tests against source files.                \n' +
 '                                                                                \n' +
@@ -74,7 +72,7 @@ module.exports = function(grunt) {
      * Build configuration parameters
      * ---------------------------------------------------------------------- */
     var packageConfig = grunt.file.readJSON('package.json') || {};
-    
+
     var ENV = {
         appName: packageConfig.name || '__UNKNOWN__',
         appVersion: packageConfig.version || '__UNKNOWN__',
@@ -91,7 +89,7 @@ module.exports = function(grunt) {
 
     ENV.ROOT = _folder.createFolderTree('./', ENV.tree);
 
-    // This is the root url prefix for the app, and represents the path 
+    // This is the root url prefix for the app, and represents the path
     // (relative to root), where the app will be available. This value should
     // remain unchanged for most apps, but can be tweaked here if necessary.
     ENV.appRoot = '/' + ENV.appName;
@@ -137,34 +135,28 @@ module.exports = function(grunt) {
         },
 
         /**
-         * Configuration for grunt-jsbeautifier, which is used to:
-         *  - Beautify all javascript, html and css files  prior to checkin.
+         * Configuration for grunt-esformatter, which is used to:
+         *  - Format javascript source code
          */
-        jsbeautifier: {
-            dev: [ LIB.allFilesPattern('js'), TEST.allFilesPattern('js') ]
+        esformatter: {
+            src: [
+                LIB.allFilesPattern('js'),
+                TEST.allFilesPattern('js')
+            ]
         },
 
         /**
-         * Configuration for grunt-contrib-jshint, which is used to:
-         *  - Monitor all source/test files and trigger actions when these
-         *    files change.
+         * Configuration for grunt-eslint, which is used to:
+         *  - Lint source and test files.
          */
-        jshint: {
-            options: {
-                reporter: require('jshint-stylish'),
-                esversion: 6,
-                node: true,
-                mocha: true,
-                // This is because we are using Bluebird to override native
-                // promise implementations, and that results in linting errors
-                // for redefinition of "Promise"
-                predef: [ "-Promise" ]
-            },
-            dev: [ 'Gruntfile.js',
-                    LIB.allFilesPattern('js'),
-                    TEST.allFilesPattern('js') ]
+        eslint: {
+            dev: [
+                'Gruntfile.js',
+                LIB.allFilesPattern('js'),
+                TEST.allFilesPattern('js')
+            ]
         },
-        
+
         /**
          * Configuration for grunt-contrib-watch, which is used to:
          *  - Monitor all source/test files and trigger actions when these
@@ -200,8 +192,8 @@ module.exports = function(grunt) {
      *  - Testing build artifacts
      *  - Cleaning up build results
      */
-    grunt.registerTask('default', [ 'jsbeautifier:dev',
-                                    'jshint:dev',
+    grunt.registerTask('default', [ 'format',
+                                    'lint',
                                     'test:unit',
                                     'clean' ]);
 
@@ -214,7 +206,7 @@ module.exports = function(grunt) {
         'Executes tests against sources',
         function(testType, target) {
             var testAction;
-            
+
             target = target || 'dev';
 
             if(testType === 'unit') {
@@ -247,17 +239,16 @@ module.exports = function(grunt) {
             // Process the arguments (specified as subtasks).
             for (var index = 0; index < arguments.length; index++) {
                 var arg = arguments[index];
-                var task = null;
 
                 if (arg === 'lint') {
-                    tasks.push('jshint:dev');
+                    tasks.push('lint');
 
                 } else if ('unit' === arg) {
                     tasks.push('test:unit');
 
                 } else {
                     // Unrecognized argument.
-                    console.warn('Unrecognized argument: %s', arg);
+                    grunt.log.warn('Unrecognized argument: %s', arg);
                 }
             }
 
@@ -312,9 +303,20 @@ module.exports = function(grunt) {
     );
 
     /**
+     * Lint task - checks source and test files for linting errors.
+     */
+    grunt.registerTask('lint', [ 'eslint:dev' ]);
+
+    /**
+     * Formatter task - formats all source and test files.
+     */
+    grunt.registerTask('format', [ 'esformatter' ]);
+
+
+    /**
      * Shows help information on how to use the Grunt tasks.
      */
-    grunt.registerTask('help', 
+    grunt.registerTask('help',
         'Displays grunt help documentation',
         function(){
             grunt.log.writeln(HELP_TEXT);
