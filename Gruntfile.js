@@ -139,6 +139,11 @@ module.exports = function(grunt) {
          *  - Format javascript source code
          */
         esformatter: {
+            options: {
+                plugins: [
+                    'esformatter-ignore'
+                ]
+            },
             src: [
                 LIB.allFilesPattern('js'),
                 TEST.allFilesPattern('js')
