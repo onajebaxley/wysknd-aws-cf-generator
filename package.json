@@ -17,6 +17,7 @@
     "camelcase": "^3.0.0",
     "clone": "^1.0.2",
     "interpolate": "^0.1.0",
+    "netmask": "^1.0.6",
     "shortid": "^2.2.6",
     "wysknd-log": "0.0.4"
   },
