@@ -1,6 +1,6 @@
 {
   "name": "wysknd-aws-cf-generator",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "Code driven AWS cloudformation template generator",
   "main": "lib/index.js",
   "scripts": {
