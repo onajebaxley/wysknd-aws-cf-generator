@@ -7,7 +7,6 @@
     },
     "rules": {
         "semi": 2,
-        "indent": ["error", 4],
         "no-trailing-spaces": "error",
         "no-unused-vars": [ "error", { "args": "none" } ]
     },
